@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "common.h"
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -11,19 +11,24 @@
 int help();
 int quit();
 int do_ls();
+int do_zy();
 
 char cmd[MAXSIZE_CMD];
 
 struct my_command cmd_set[] = {
-
-	{NULL, NULL, "help", help}, /* help display info about this shell*/
-	{NULL, NULL, "quit", quit}, /* help display info about this shell*/
-	{NULL, NULL, "ls", do_ls},
-	{NULL, NULL, NULL, NULL}
+	{0, NULL, "help", help}, /* help display info about this shell*/
+	{0, NULL, "quit", quit}, /* help display info about this shell*/
+	{0, NULL, "ls", do_ls},
+	{0, NULL, "zy", do_zy},
+	{0, NULL, NULL, NULL}
 };
 
 
-int do_ls() {
+int do_zy(void) {
+    printf("Hello, zy!!!\n");
+    return 0;
+}
+int do_ls(void) {
 	int fd;	
 	DIR *dir;
 	struct dirent *stru_dir;
@@ -37,7 +42,6 @@ int do_ls() {
 
 
 	while((stru_dir = readdir(dir)) != NULL ) {
-		int i = 0 ;
 		if (strcmp(stru_dir->d_name, ".") != 0 
 		   && strcmp(stru_dir->d_name, "..") != 0)
 		{	
@@ -45,6 +49,7 @@ int do_ls() {
 		}	
 	}
 	printf("\n");
+    return 0;
 }
 
 
@@ -62,23 +67,24 @@ cd , ls , quit and so on \n");
 	return 0;
 
 }
-
-int main(int argc,char **argv) {
-
-	while(1) {
-		main_loop();
-	}
-	/*
-	 * option 
-	 */	
-	//	getopt();
-	
+int findcmd(char *user_cmd)
+{
+    struct my_command *p = cmd_set;
+    int ret;
+    while(p->name) {
+        if (!strncmp(p->name, user_cmd, strlen(cmd))){
+               ret=p->cmd(0, NULL);
+               return ret;
+        }
+        p++;
+    }
+    return 127;
 }
 
 void main_loop() {
-
 	int count = 0;
 	char c;
+    int ret;
 
 	printf("kingshell$ ");
 	fflush(stdout);
@@ -90,5 +96,20 @@ void main_loop() {
 		exit(-1);
 	}
 	cmd[count] = '\0'; //end of string(cmd)
-	run(cmd);
+    ret=findcmd(cmd);
+    if (ret==127) {
+	    system(cmd);
+    }
 }
+
+int main(int argc,char **argv) {
+
+	while(1) {
+		main_loop();
+	}
+	/*
+	 * option 
+	 */	
+	//	getopt();
+}
+

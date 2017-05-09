@@ -1,4 +1,4 @@
-OBJS = main.o run.o
+OBJS = main.o 
 CC = gcc
 CFLAGS = -Wall -O -g
 
